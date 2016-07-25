@@ -1,0 +1,9 @@
+{
+  'rules': {
+    // https://mochajs.org/ says "Passing arrow functions to Mocha is discouraged"
+    'prefer-arrow-callback': 'off',
+    // Methods like 'describe' and 'beforeEach' are undefined in our code
+    'no-undef': 'off',
+    'no-var': 'off'
+  }
+}
