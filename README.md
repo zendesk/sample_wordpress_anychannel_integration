@@ -8,6 +8,8 @@ Zendesk to Wordpress.  It is intended to be used with the AnyChannel tutorial
 It only works with Wordpress instances that have the "rest-api" and "JSON Basic Authentication"
 plug-ins.
 
+NOTE: THIS IS NOT AN EXAMPLE OF A PROPERLY SECURED INTEGRATION.  It's intentionally as simple as reasonable, and it skips best practices like using oauth and handling errors gracefully.  Production integrations should NOT use basic authentication.
+
 ## Copyright and license
 Copyright 2015 Zendesk
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
