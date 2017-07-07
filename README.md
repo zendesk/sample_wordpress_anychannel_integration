@@ -2,8 +2,7 @@
 
 ## Description
 This repository contains the source code for an integration service that connects
-Zendesk to Wordpress.  It is intended to be used with the AnyChannel tutorial
-(TODO: Add link once it's available.)
+Zendesk to Wordpress.  It is intended to be used with the [AnyChannel tutorial](https://help.zendesk.com/hc/en-us/articles/229137767-Channel-framework-startup-tutorial-Overview).
 
 It only works with Wordpress instances that have the "rest-api" and "JSON Basic Authentication"
 plug-ins.

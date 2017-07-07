@@ -24,7 +24,8 @@ describe('Wordpress', function testWordpress() {
            pull_url: './pull',
            channelback_url: './channelback',
            clickthrough_url: './clickthrough',
-           healthcheck_url: './healthcheck' } };
+           healthcheck_url: './healthcheck',
+           event_callback_url: './event_callback' } };
 
       assert.equal(200, res.statusCode);
       assert.deepEqual(expected, res._getData());
@@ -712,6 +713,20 @@ describe('Wordpress', function testWordpress() {
     it('returns 200', function returns200() {
       wordpress.healthcheck(res);
       assert.equal(200, res.statusCode);
+    });
+  });
+
+  describe('#event_callback()', function testEventCallback() {
+    it('returns 200', function returns200() {
+      wordpress.event_callback('test info', res);
+      assert.equal(200, res.statusCode);
+    });
+
+    it('logs body', function logsBody() {
+      var logger = sinon.spy(console, 'log')
+      wordpress.event_callback('test info', res);
+      assert(logger.calledWith('Event callback:'));
+      assert(logger.calledWith('test info'));
     });
   });
 });

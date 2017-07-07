@@ -114,7 +114,8 @@ exports.manifest = res => {
       pull_url: './pull',
       channelback_url: './channelback',
       clickthrough_url: './clickthrough',
-      healthcheck_url: './healthcheck'
+      healthcheck_url: './healthcheck',
+      event_callback_url: './event_callback'
     }
   });
 };
@@ -539,5 +540,20 @@ exports.clickthrough = (externalId, res) => {
  * @param {Object} res Response object used to return health information
  */
 exports.healthcheck = res => {
+  res.sendStatus(200);
+};
+
+/**
+ * When Zendesk performs an event on our behalf, it will report the event by
+ * calling this endpoint.  It will POST info about the event.  We will log the
+ * event information for debugging purposes.
+ *
+ * @param {Object} body The request body, which contains the JSON data that was
+ * posted
+ * @param {Object} res Response object to which results will be written
+ */
+exports.event_callback = (body, res) => {
+  console.log('Event callback:');
+  console.log(body);
   res.sendStatus(200);
 };
