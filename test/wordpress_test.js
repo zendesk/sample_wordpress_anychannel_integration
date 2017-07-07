@@ -716,15 +716,15 @@ describe('Wordpress', function testWordpress() {
     });
   });
 
-  describe('#event_callback()', function testEventCallback() {
+  describe('#eventCallback()', function testEventCallback() {
     it('returns 200', function returns200() {
-      wordpress.event_callback('test info', res);
+      wordpress.eventCallback('test info', res);
       assert.equal(200, res.statusCode);
     });
 
     it('logs body', function logsBody() {
       var logger = sinon.spy(console, 'log')
-      wordpress.event_callback('test info', res);
+      wordpress.eventCallback('test info', res);
       assert(logger.calledWith('Event callback:'));
       assert(logger.calledWith('test info'));
     });

@@ -552,7 +552,7 @@ exports.healthcheck = res => {
  * posted
  * @param {Object} res Response object to which results will be written
  */
-exports.event_callback = (body, res) => {
+exports.eventCallback = (body, res) => {
   console.log('Event callback:');
   console.log(body);
   res.sendStatus(200);

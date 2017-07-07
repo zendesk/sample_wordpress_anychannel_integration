@@ -146,7 +146,7 @@ app.get('/healthcheck', (req, res) => {
 });
 
 app.post('/event_callback', (req, res) => {
-  wordpress.event_callback(req.body, res);
+  wordpress.eventCallback(req.body, res);
 });
 
 
