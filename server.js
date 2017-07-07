@@ -13,6 +13,7 @@ const app = express();
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
 // Helper functions
@@ -142,6 +143,10 @@ app.get('/clickthrough', (req, res) => {
 
 app.get('/healthcheck', (req, res) => {
   wordpress.healthcheck(res);
+});
+
+app.post('/event_callback', (req, res) => {
+  wordpress.eventCallback(req.body, res);
 });
 
 
