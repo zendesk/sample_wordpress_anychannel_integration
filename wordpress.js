@@ -109,6 +109,7 @@ exports.manifest = res => {
     id: 'com.zendesk.anychannel.integrations.wordpress',
     author: 'Zendesk',
     version: 'v0.0.1',
+    channelback_files: true,
     urls: {
       admin_ui: './admin_ui',
       pull_url: './pull',
@@ -483,7 +484,20 @@ function channelbackOptions(metadata, parent, post, content) {
  *  creating
  * @param {Object} res Response object to which JSON results will be written
  */
-exports.channelback = (metadata, parentId, channelbackMessage, res) => {
+exports.channelback = (metadata, parentId, channelbackMessage, channelbackAttachmentUrls, res) => {
+  // Wordpress doesn't support adding attachments to comments out-of-the-box, so
+  // we'll append the URLs to the comment.  This is NOT A GOOD IDEA in general
+  // since the URLs may be secured or may not be available in the future.
+  // Normally, we'd download the attachment (using the push OAuth token), then
+  // upload it to the origin service.
+  if (channelbackAttachmentUrls != null) {
+    var arrayLength = channelbackAttachmentUrls.length;
+    channelbackMessage += '\n\nAttachments:'
+    for (var i = 0; i < arrayLength; i++) {
+      channelbackMessage += '\n' + channelbackAttachmentUrls[i];
+    }
+  }
+
   const postId = parseExternalCommentId(parentId).post_id;
   const options = channelbackOptions(
     metadata,

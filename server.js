@@ -12,7 +12,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
@@ -102,6 +102,17 @@ function channelbackMessage(req) {
 }
 
 /**
+ * Extracts any attachment URLs from a channelback POST request.  These URLs
+ * can be used to download the attachments from Zendesk using an authentication
+ * token.
+ * @param {req} req POST request
+ * @returns {array}
+ */
+function channelbackAttachmentUrls(req) {
+  return req.body.file_urls
+}
+
+/**
  * Extracts the external_id from a clickthrough GET request.  This is the
  * ID of the item they're clicking through on.
  *
@@ -134,7 +145,7 @@ app.post('/pull', (req, res) => {
 app.post('/channelback', (req, res) => {
   wordpress.channelback(
     metadata(req), parentId(req),
-    channelbackMessage(req), res);
+    channelbackMessage(req), channelbackAttachmentUrls(req), res);
 });
 
 app.get('/clickthrough', (req, res) => {
