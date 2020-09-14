@@ -4,7 +4,7 @@
 This repository contains the source code for an integration service that connects
 Zendesk to WordPress. It is intended to be used with the [Channel framework startup tutorial](https://zendesk.github.io/sample_wordpress_anychannel_integration/). The repository also contains the source Markdown for the tutorial.
 
-The example channel only works with WordPress instances that have the rest-api and JSON Basic Authentication plug-ins. See [Known issues](https://zendesk.github.io/sample_wordpress_anychannel_integration/#known-issues) in the docs.
+The example channel no longer works with newer WordPress instances that don't use the rest-api plug-in. See [Known issues](https://zendesk.github.io/sample_wordpress_anychannel_integration/#known-issues) in the docs.
 
 NOTE: THIS IS NOT AN EXAMPLE OF A PROPERLY SECURED INTEGRATION.  It's intentionally as simple as reasonable, and it skips best practices like using oauth and handling errors gracefully.  Production integrations should NOT use basic authentication.
 
