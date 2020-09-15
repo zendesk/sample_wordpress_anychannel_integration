@@ -46,13 +46,11 @@ Refer to the installation instructions of these applications on how to install t
 
 ### Known issues
 
-This tutorial was created in 2017 and some information about WordPress may be out of date.
+This tutorial was created in 2017 and contains information about WordPress that may be out of date. Specifically, the following issues have been reported:
 
-Specifically, WordPress and mySql have changed behaviors since the tutorial was created a few years back:
-
-- the WordPress plugin used to do REST API calls is no longer necessary as of quite a while ago
+- the WordPress plugin used to do REST API calls is no longer necessary
 - the WordPress user needs to be updated for the mySQL connection to work
-- the way the service's code is written, you have to have a non-plain permalink specified under preferences. The value of "plain" is the default, so this needs to be changed by the WordPress administrator.
+- permalinks must be set as non-plain in preferences
 
 These and other issues are detailed below.
 
@@ -74,9 +72,9 @@ Run this command as root for mySql connector to work:
 
 #### WordPress permalinks
 
-Because of the way the newer version of WordPress works and exposes its API, you need to, as the WP admin, go in and change from "plain" permalinks to "not plain" permalink. If this is not done, the example code will not work.
+Because of the way the newer version of WordPress works and exposes its API, a WordPress admin must change "plain" permalinks to "not plain" in Preferences. If this is not done, the example code will not work.
 
-You do however need to change from default permalink. If you use "plain", the WordPress REST API doesn't work. It just returns 200 with no data. See https://wordpress.stackexchange.com/questions/273144/can-i-use-rest-api-on-plain-permalink-format.
+If you use the default "plain" permalink, the WordPress REST API just returns 200 with no data. See https://wordpress.stackexchange.com/questions/273144/can-i-use-rest-api-on-plain-permalink-format.
 
 So https://wordpress.org/wp-json/wp/v2/ would become https://wordpress.org/?rest_route=/wp/v2 to give you a more complete example.
 
