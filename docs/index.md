@@ -1,11 +1,11 @@
-## Channel framework startup tutorial
+# Channel framework startup tutorial
 
 This tutorial consists of the following sections:
 
 - [Overview](#overview)
 - [Known issues](#known-issues)
 - [Step 1: Setup the developer environment](#step-1-setup-the-developer-environment)
-- [Step 2: Get resources from the origin service (Polling)](##step-2-get-resources-from-the-origin-service-polling)
+- [Step 2: Get resources from the origin service (Polling)](#step-2-get-resources-from-the-origin-service-polling)
 - [Step 3: Add logging of event callbacks](#step-3-add-logging-of-event-callbacks)
 - [Step 4: Post new resources to the origin service (Channelback)](#step-4-post-new-resources-to-the-origin-service-channelback)
 - [Step 5: Connect the integration service to Zendesk Support - Part 1 (Admin UI, Manifest)](#step-5-connect-the-integration-service-to-zendesk-support---part-1-admin-ui-manifest)
@@ -14,37 +14,40 @@ This tutorial consists of the following sections:
 - [Step 8: Provide native resource links in Zendesk Support (Clickthrough)](#step-8-provide-native-resource-links-in-zendesk-support-clickthrough)
 - [Appendix: Environment Setup](#appendix-environment-setup)
 
+## Overview
 
-### Overview
 The Channel framework lets you integrate origin services with Zendesk Support. It enables mirroring content between those origin services and Zendesk Support and agents to support customers on origin services through Zendesk Support.
 
-In this tutorial, you'll build an integration service for WordPress.  Zendesk Support will call the integration service periodically, converting WordPress blog comments into Zendesk Support tickets and comments. Agents can respond in Zendesk Support.  The Channel framework sends these agent responses to the integration service, which creates corresponding comments in WordPress.
+In this tutorial, you'll build an integration service for WordPress. Zendesk Support will call the integration service periodically, converting WordPress blog comments into Zendesk Support tickets and comments. Agents can respond in Zendesk Support. The Channel framework sends these agent responses to the integration service, which creates corresponding comments in WordPress.
 
-#### Difference between integrating with the Channel framework and the Zendesk REST API
-Building an integration using the Zendesk REST API requires extensive knowledge of the Zendesk Support data model, and of course of the Zendesk API.
-Building an integration using the Channel framework doesn’t require any knowledge of the Zendesk Support data model or APIs.  Instead, the integration exposes itself as a web service.  It implements methods specified by Zendesk Support, but it doesn’t need to call Zendesk Support at all.  The methods it exposes are not dependent on internal Zendesk Support details.
+### Difference between integrating with the Channel framework and the Zendesk REST API
 
-#### Intended audiences
-This tutorial is for developers building integrations between origin services and Zendesk Support. This is a beginner-level tutorial that goes over basic Channel framework concepts. Basic JavaScript proficiency is required.
+Building an integration using the Zendesk REST API requires extensive knowledge of the Zendesk Support data model, and of course of the Zendesk API. Building an integration using the Channel framework doesn’t require any knowledge of the Zendesk Support data model or APIs. Instead, the integration exposes itself as a web service. It implements methods specified by Zendesk Support, but it doesn’t need to call it at all. The methods it exposes are not dependent on internal Zendesk Support details.
 
-#### Prerequisites
+### Intended audiences
+
+This tutorial is for developers building integrations between origin services and Zendesk Support. This is a intermediate-level tutorial that goes over basic Channel framework concepts. Basic JavaScript proficiency and knowledge of web technologies are required.
+
+### Prerequisites
+
 This tutorial requires you to:
-* Install applications on your computer. (Note: We have not tested the instructions with role escalation. You may need extra configuration if you're sudoing.)
-* Use the `curl` command for testing.
-* Have access to a Zendesk Support account for testing
+
+- Install applications on your computer. (Note: We have not tested the instructions with role escalation. You may need extra configuration if you're sudoing.)
+- Use the `curl` command for testing.
+- Have access to a Zendesk Support account for testing
 
 This tutorial uses WordPress as the origin service. To run everything in this tutorial, you need:
-* Database for WordPress
-* [WordPress](https://codex.wordpress.org/Installing_WordPress)
-* "rest-api" WordPress plugin
-* "JSON Basic Authentication" WordPress plugin
-* Node for integration service
-* [Ruby for the Zendesk App Tools](https://help.zendesk.com/hc/en-us/articles/229489288)
+
+- Database for WordPress
+- [WordPress](https://codex.wordpress.org/Installing_WordPress)
+- "rest-api" WordPress plugin
+- "JSON Basic Authentication" WordPress plugin
+- Node for integration service
+- [Ruby for the Zendesk Apps Tools (ZAT)](https://developer.zendesk.com/documentation/apps/zendesk-app-tools-zat/installing-and-using-zat/#installing-ruby)
 
 Refer to the installation instructions of these applications on how to install them.
 
-
-### Known issues
+## Known issues
 
 This tutorial was created in 2017 and contains information about WordPress that may be out of date. Specifically, the following issues have been reported:
 
@@ -54,13 +57,13 @@ This tutorial was created in 2017 and contains information about WordPress that 
 
 These and other issues are detailed below.
 
-#### Wordpress rest-api plugin
+### Wordpress rest-api plugin
 
 The recommended WordPress rest-api library is no longer maintained. According to [WordPress](https://wordpress.org/plugins/rest-api/), the plugin "hasn’t been tested with the latest 3 major releases of WordPress. It may no longer be maintained or supported and may have compatibility issues when used with more recent versions of WordPress."
 
 The plug-in is no longer needed with the latest WordPress. The user is given a link to download.
 
-#### mySql connector error
+### mySql connector error
 
 Connection error:
 
@@ -70,7 +73,7 @@ Run this command as root for mySql connector to work:
 
 `ALTER USER 'wordpress' IDENTIFIED WITH mysql_native_password BY 'wordpress';`
 
-#### WordPress permalinks
+### WordPress permalinks
 
 Because of the way the newer version of WordPress works and exposes its API, a WordPress admin must change "plain" permalinks to "not plain" in Preferences. If this is not done, the example code will not work.
 
@@ -84,7 +87,7 @@ Example: http://127.0.0.1:25789/?rest_route=/wp/v2/users
 
 However, http://127.0.0.1:25789/wp-json/ works when on "not plain" permalink.
 
-#### Password in curl command
+### Password in curl command
 
 Had trouble running the curl command in the tutorial. Putting password inline with curl, it wasn't encoding correctly.
 
@@ -100,7 +103,7 @@ If I escaped the `$` character in the pasword, it worked:
 
 Since Wordpress uses strong passwords, make sure you escape any special characters and use the above as an example.
 
-#### Step 2 and 3 out of sync with example
+### Step 2 and 3 out of sync with example
 
 Steps 2 and 3 of the tutorial are out of sync with what's in the github repo example and the code related to event_callback is incomplete and doesn't work.
 
@@ -116,39 +119,39 @@ Step 2 had all code from tutorial commented out. Step 3 talked about adding even
 
 - Need to add event_callback to manifest in wordpress.js:
 
-    ```
-    exports.manifest = res => {
-    ...
-    ... snip,
-          event_callback_url: './event_callback'
-    ...snip
-    ```
+  ```
+  exports.manifest = res => {
+  ...
+  ... snip,
+        event_callback_url: './event_callback'
+  ...snip
+  ```
 
 - Need to add Express JSON support into server.js.
 
+## Step 1: Setup the developer environment
 
-### Step 1: Setup the developer environment
 To run this tutorial, you need to set up the following applications:
 
-* A working local WordPress instance. You can use a WordPress docker image or install WordPress locally. After that, install the necessary plugins for WordPress to respond to the integration service through the REST API.
+- A working local WordPress instance. You can use a WordPress docker image or install WordPress locally. After that, install the necessary plugins for WordPress to respond to the integration service through the REST API.
 
-	(Zendesk doesn’t recommend using a public WordPress instance. The code uses simple authentication and creates test comments. These choices may not be acceptable for public WordPress instances. This tutorial can’t be completed using WordPress.com because it does not support plugins.)
+  (Zendesk doesn’t recommend using a public WordPress instance. The code uses simple authentication and creates test comments. These choices may not be acceptable for public WordPress instances. This tutorial can’t be completed using WordPress.com because it does not support plugins.)
 
-* A development environment in which to run the integration service Node application. The setup instructions have information on how to run and expose a local integration service to public network for Zendesk Support to connect.
+- A development environment in which to run the integration service Node application. The setup instructions have information on how to run and expose a local integration service to public network for Zendesk Support to connect.
 
-Before setting up your environment, download the source code for this tutorial from Github.
+Before setting up your environment, download the [source code for this repository from Github](https://github.com/zendesk/sample_wordpress_anychannel_integration).
 
-[**Figure out how to refer to the setup suggestion**](https://docs.google.com/document/d/1EV_gKfP6xJSD0svgWzBH5cehz9FN2YD-ewsbLN8ef-Q/edit#)
+See [Appendix: Environment Setup](#appendix-environment-setup) for suggestions on how to set up your environment.
 
 After setting everything up, verify the setup by:
 
-* Running `node server.js` at the local source code directory. The integration service should start listening at `localhost:3000`
+- Running `node server.js` at the local source code directory. The integration service should start listening at `localhost:3000`
 
-* Verifying the server is running by visiting `http://localhost:3000/healthcheck` in a browser; you should get OK back.
+- Verifying the server is running by visiting `http://localhost:3000/healthcheck` in a browser; you should get OK back.
 
 After every testable change throughout the tutorial, press **Ctrl+C** to stop the integration service and restart it using `node server.js` command. This ensures that the integration service is using your latest changes.
 
-In this tutorial, you will verify each step using curl.  The verification commands require the WordPress url, user name and password. You can set shell variables to make this easier.
+In this tutorial, you will verify each step using curl. The verification commands require the WordPress url, user name and password. You can set shell variables to make this easier.
 
 ```
 export WORDPRESS_URL=http://localhost:25789/
@@ -158,10 +161,11 @@ export WORDPRESS_PASSWORD=lchan
 
 **Note**: The integration service exposes the endpoint using routes defined in server.js. Read server.js if you want more information about the Node Express service.
 
-**Note**: This tutorial does not provide  line-by-line commentary for some helper methods defined in wordpress.js. Read wordpress.js to see the implementations of those methods.
+**Note**: This tutorial does not provide line-by-line commentary for some helper methods defined in wordpress.js. Read wordpress.js to see the implementations of those methods.
 
-### Step 2: Get resources from the origin service (Polling)
-In this step, you add an endpoint to support polling.  Zendesk Support will periodically POST to your endpoint.  Your code will retrieve data from the WordPress API, transform it to a format readable by Zendesk Support, and return it to the caller.
+## Step 2: Get resources from the origin service (Polling)
+
+In this step, you add an endpoint to support polling. Zendesk Support will periodically POST to your endpoint. Your code will retrieve data from the WordPress API, transform it to a format readable by Zendesk Support, and return it to the caller.
 
 To query the WordPress REST API, the integration service needs connection parameters such as the REST endpoint URL, user information, and ordering parameters. The `pullRequestOptions` function formats this information for use with the networking library.
 
@@ -172,15 +176,15 @@ function pullRequestOptions(metadata, state) {
   const options = {
     uri: `${metadata.wordpress_location}/wp-json/wp/v2/comments`,
     qs: {
-      orderby: 'id',
-      order: 'asc',
-      page: '1',
-      per_page: '100'
+      orderby: "id",
+      order: "asc",
+      page: "1",
+      per_page: "100",
     },
     auth: {
       user: metadata.login,
-      pass: metadata.password
-    }
+      pass: metadata.password,
+    },
   };
 
   if (state && state.most_recent_item_timestamp) {
@@ -199,20 +203,22 @@ In wordpress.js, add the `transformComments` logic:
 function transformComments(comments) {
   let link;
 
-  return comments.length ? comments.map(comment => {
-    link = comment.link;
+  return comments.length
+    ? comments.map((comment) => {
+        link = comment.link;
 
-    return {
-      external_id: externalCommentId(link, comment.id, comment.post),
-      message: stripHTML(comment.content.rendered),
-      parent_id: externalCommentId(link, comment.parent, comment.post),
-      created_at: (new Date(comment.date_gmt)).toISOString(),
-      author: {
-        external_id: comment.author.toString(),
-        name: comment.author_name || 'Anonymous'
-      }
-    };
-  }) : [];
+        return {
+          external_id: externalCommentId(link, comment.id, comment.post),
+          message: stripHTML(comment.content.rendered),
+          parent_id: externalCommentId(link, comment.parent, comment.post),
+          created_at: new Date(comment.date_gmt).toISOString(),
+          author: {
+            external_id: comment.author.toString(),
+            name: comment.author_name || "Anonymous",
+          },
+        };
+      })
+    : [];
 }
 ```
 
@@ -235,7 +241,7 @@ exports.pull = (metadata, state, res) => {
           newState = pullState(bodyInfo, state);
           res.send({
             external_resources: transformedComments,
-            state: JSON.stringify(newState)
+            state: JSON.stringify(newState),
           });
         } catch (e) {
           // Bad/unexpected data from WordPress
@@ -260,7 +266,7 @@ exports.pull = (metadata, state, res) => {
 
 This is a lot of code, but don’t worry, we’ll explain the pull function in detail.
 
-On line three, we call `pullRequestOptions` to set up the GET request parameters.  On line two, we perform the GET to WordPress based on those parameters.
+On line three, we call `pullRequestOptions` to set up the GET request parameters. On line two, we perform the GET to WordPress based on those parameters.
 
 Everything else is a callback function to handle the response from WordPress.
 
@@ -284,14 +290,15 @@ This command posts to the pull endpoint you built. It passes the metadata and st
 {"external_resources":[{"external_id":"8:2:http://localhost:25789/index.php/rick-astley-50/#comment-2","message":"Never Gonna Give You Up.\n","parent_id":"8:0:http://localhost:25789/index.php/rick-astley-50/#comment-0","created_at":"2016-07-19T22:56:33.000Z","author":{"external_id":"1","name":"lchan"}}],"state":"{\"most_recent_item_timestamp\":\"2016-07-19T22:56:33\"}"}
 ```
 
-### Step 3: Add logging of event callbacks
-When Zendesk performs an action for our integration, it can call back to your service via a webhook style callback to let us know what happened.  This is particularly helpful when debugging problems with your service.
+## Step 3: Add logging of event callbacks
+
+When Zendesk performs an action for our integration, it can call back to your service via a webhook style callback to let us know what happened. This is particularly helpful when debugging problems with your service.
 
 To support event callbacks, add the `eventCallback` function to wordpress.js:
 
 ```javascript
 exports.eventCallback = (body, res) => {
-  console.log('Event callback:');
+  console.log("Event callback:");
   console.log(body);
   res.sendStatus(200);
 };
@@ -303,10 +310,11 @@ You can test this by POSTing data to the event callback endpoint, and verifying 
 curl -X POST -d '{"some key":"some value"}' -H "Content-Type: application/json" http://localhost:3000/event_callback
 ```
 
-### Step 4: Post new resources to the origin service (Channelback)
-In this step you will add an endpoint to post comments from Zendesk Support to WordPress.  It will return the external id of the newly created WordPress comment back to Zendesk Support.
+## Step 4: Post new resources to the origin service (Channelback)
 
-To make a comment using the WordPress REST API, the integration service needs the endpoint URL, user information, the comment text for the new comment, and the identifier of the comment the agent is replying to.  We’ll handle this logic in the `channelbackOptions` function.
+In this step you will add an endpoint to post comments from Zendesk Support to WordPress. It will return the external id of the newly created WordPress comment back to Zendesk Support.
+
+To make a comment using the WordPress REST API, the integration service needs the endpoint URL, user information, the comment text for the new comment, and the identifier of the comment the agent is replying to. We’ll handle this logic in the `channelbackOptions` function.
 
 Add the `channelbackOptions` function to wordpress.js:
 
@@ -318,12 +326,12 @@ function channelbackOptions(metadata, parent, post, content) {
       parent,
       post,
       author: metadata.author,
-      content
+      content,
     },
     auth: {
       user: metadata.login,
-      pass: metadata.password
-    }
+      pass: metadata.password,
+    },
   };
 }
 ```
@@ -335,7 +343,13 @@ Now you can add logic to post the new comment to WordPress using the request opt
 In wordpress.js, add the channelback logic:
 
 ```javascript
-exports.channelback = (metadata, parentId, channelbackMessage, channelbackAttachmentUrls, res) => {
+exports.channelback = (
+  metadata,
+  parentId,
+  channelbackMessage,
+  channelbackAttachmentUrls,
+  res
+) => {
   // Wordpress doesn't support adding attachments to comments out-of-the-box, so
   // we'll append the URLs to the comment.  This is NOT A GOOD IDEA in general
   // since the URLs may be secured or may not be available in the future.
@@ -343,9 +357,9 @@ exports.channelback = (metadata, parentId, channelbackMessage, channelbackAttach
   // upload it to the origin service.
   if (channelbackAttachmentUrls != null) {
     var arrayLength = channelbackAttachmentUrls.length;
-    channelbackMessage += '\n\nAttachments:'
+    channelbackMessage += "\n\nAttachments:";
     for (var i = 0; i < arrayLength; i++) {
-      channelbackMessage += '\n' + channelbackAttachmentUrls[i];
+      channelbackMessage += "\n" + channelbackAttachmentUrls[i];
     }
   }
 
@@ -354,49 +368,48 @@ exports.channelback = (metadata, parentId, channelbackMessage, channelbackAttach
     metadata,
     parseExternalCommentId(parentId).comment_id,
     postId,
-    channelbackMessage);
+    channelbackMessage
+  );
   let bodyInfo;
   let errorDescription;
 
-  request.post(
-    options,
-    (error, wordpressResponse, body) => {
-      if (!error && wordpressResponse.statusCode === 201) {
-        // Successfully created WordPress comment.  Return the ID of the new
-        // comment.
-        bodyInfo = JSON.parse(body);
-        res.status(200).send({
-          external_id: externalCommentId(
-                        parseExternalCommentId(parentId).link,
-                        bodyInfo.id,
-                        postId)
-        });
-      } else if (wordpressResponse && wordpressResponse.statusCode) {
-        // WordPress returned an error
-        errorDescription = {};
-        if (body) errorDescription = { error_info: body };
-        res.status(wordpressResponse.statusCode).send(errorDescription);
-      } else {
-        // Networking error or similar- no response
-        // 503 == service unavailable
-        res.sendStatus(503);
-      }
+  request.post(options, (error, wordpressResponse, body) => {
+    if (!error && wordpressResponse.statusCode === 201) {
+      // Successfully created WordPress comment.  Return the ID of the new
+      // comment.
+      bodyInfo = JSON.parse(body);
+      res.status(200).send({
+        external_id: externalCommentId(
+          parseExternalCommentId(parentId).link,
+          bodyInfo.id,
+          postId
+        ),
+      });
+    } else if (wordpressResponse && wordpressResponse.statusCode) {
+      // WordPress returned an error
+      errorDescription = {};
+      if (body) errorDescription = { error_info: body };
+      res.status(wordpressResponse.statusCode).send(errorDescription);
+    } else {
+      // Networking error or similar- no response
+      // 503 == service unavailable
+      res.sendStatus(503);
     }
-  );
+  });
 };
 ```
 
-Lines 2-13 report any channelback attachment URLs that were POSTed to the integration. In a robust integration, these URLs would be used to download the attachments and then upload them to the origin system.  However, Wordpress doesn't support attaching files to comments, so we will not implement that logic. A production oriented implementation of the Wordpress integration would probably not support attachments at all. Instead, the manifest would indicate that attachments are not supported.
+Lines 2-13 report any channelback attachment URLs that were POSTed to the integration. In a robust integration, these URLs would be used to download the attachments and then upload them to the origin system. However, Wordpress doesn't support attaching files to comments, so we will not implement that logic. A production oriented implementation of the Wordpress integration would probably not support attachments at all. Instead, the manifest would indicate that attachments are not supported.
 
 Line 15 parses the external id to get the post id we are going to reply to. See the [External IDs](#external-ids) for more information. Lines 16-20 prepare the parameters which will be POSTed to the WordPress API. Line 26 posts the request to WordPress. Similar to the pull implementation, line 26 passes a response handler function to the post call.
 
-Lines 28-36 are invoked when WordPress returns HTTP status code 201 (Created). The handler parses the response from WordPress on line 30, creates the external id for Zendesk Support on lines 32-34, and returns 200 (OK) to Zendesk Support with the external id. Zendesk Support records the external ID.  If it sees this external ID in a future poll, Zendesk Support will not import it again.
+Lines 28-36 are invoked when WordPress returns HTTP status code 201 (Created). The handler parses the response from WordPress on line 30, creates the external id for Zendesk Support on lines 32-34, and returns 200 (OK) to Zendesk Support with the external id. Zendesk Support records the external ID. If it sees this external ID in a future poll, Zendesk Support will not import it again.
 
 If WordPress returns an error or the network request times out, lines 38-41 and 43-45 return appropriate error codes back to Zendesk Support. Read [the pull request documentation](https://developer.zendesk.com/apps/docs/channels-framework/pull_endpoint#recognized-error-responses) on how Zendesk Support handles errors from integration service.
 
-To recap: In this step you added logic to turn Zendesk Support comments into WordPress comments by generating the appropriate WordPress API parameters.  You also generated an external ID for the WordPress comment.
+To recap: In this step you added logic to turn Zendesk Support comments into WordPress comments by generating the appropriate WordPress API parameters. You also generated an external ID for the WordPress comment.
 
-#### External IDs
+### External IDs
 
 Here is the explanation of what does external ids mean in the Channels Framework. Zendesk Support uses external ids to determine if an external resource has been previously imported. Zendesk Support also uses external ids to specify which external resource is being replied to. The external id is created by the integration service, and each external resource must have a unique external id.
 
@@ -410,7 +423,7 @@ Read the `externalCommentId` and `parseExternalCommentId` functions to see how o
 
 Now you can verify that your implementation works by curl'ing both the pull and channelback endpoints. (Note: This assumes you have completed step 2.)
 
-Make sure there is at least one comment in WordPress. Restart the server, [set the WordPress variables](point to Step1), and run this `curl` command to pull.  You’ll use the results to get the external id of a WordPress comment, which you’ll pass to the channelback command.
+Make sure there is at least one comment in WordPress. Restart the server, [set the WordPress variables](point to Step1), and run this `curl` command to pull. You’ll use the results to get the external id of a WordPress comment, which you’ll pass to the channelback command.
 
 ```
 curl -d "metadata={\"password\":\"$WORDPRESS_PASSWORD\", \"login\":\"$WORDPRESS_USER\", \"wordpress_location\":\"$WORDPRESS_URL\",\"author\":\"1\"}&state={}" http://localhost:3000/pull
@@ -431,32 +444,31 @@ You should get a response like this:
 
 Also, if you go to the WordPress UI, you should see the new comment created by the channelback.
 
-
-### Step 5: Connect the integration service to Zendesk Support - Part 1 (Admin UI, Manifest)
+## Step 5: Connect the integration service to Zendesk Support - Part 1 (Admin UI, Manifest)
 
 After the previous two steps, you have an integration service that communicates with WordPress in both directions. The next step is to wire this up with Zendesk Support so it knows where the integration service is and what capabilities the integration service has.
 
-#### Step 5A: Create the manifest
+### Step 5A: Create the manifest
 
 Integration services are self-describing. They expose a manifest which describes their attributes and capabilities in JSON. The manifest includes the name, globally unique id, author, version, and a list of all reachable endpoints on the integration service.
 
 In wordpress.js, add the following code:
 
 ```javascript
-exports.manifest = res => {
+exports.manifest = (res) => {
   res.send({
-    name: 'WordPress',
-    id: 'com.zendesk.anychannel.integrations.wordpress',
-    author: 'Zendesk',
-    version: 'v0.0.1',
+    name: "WordPress",
+    id: "com.zendesk.anychannel.integrations.wordpress",
+    author: "Zendesk",
+    version: "v0.0.1",
     channelback_files: true,
     urls: {
-      admin_ui: './admin_ui',
-      pull_url: './pull',
-      channelback_url: './channelback',
-      clickthrough_url: './clickthrough',
-      healthcheck_url: './healthcheck'
-    }
+      admin_ui: "./admin_ui",
+      pull_url: "./pull",
+      channelback_url: "./channelback",
+      clickthrough_url: "./clickthrough",
+      healthcheck_url: "./healthcheck",
+    },
   });
 };
 ```
@@ -477,15 +489,15 @@ You should get a JSON string like:
 {"name":"WordPress","id":"com.zendesk.anychannel.integrations.wordpress","author":"Zendesk","version":"v0.0.1","urls":{"admin_ui":"./admin_ui","pull_url":"./pull","channelback_url":"./channelback","clickthrough_url":"./clickthrough","healthcheck_url":"./healthcheck"}}
 ```
 
-#### Step 5B:  Allow the Zendesk Support admin to set up the Integration Service
+### Step 5B: Allow the Zendesk Support admin to set up the Integration Service
 
-You have now built the necessary API endpoints for the Channel framework to interact with the integration service. However, the integration service doesn’t have a way for the Zendesk Support admin to provide WordPress login information. Now you are going to build the UI to collect the WordPress information from the Zendesk Support administrator.  Zendesk Support will store this information in an integration account. In the Channel framework, an integration account records information about an instance of the origin service. For example, an integration account for WordPress integration service stores connection information for a WordPress login.
+You have now built the necessary API endpoints for the Channel framework to interact with the integration service. However, the integration service doesn’t have a way for the Zendesk Support admin to provide WordPress login information. Now you are going to build the UI to collect the WordPress information from the Zendesk Support administrator. Zendesk Support will store this information in an integration account. In the Channel framework, an integration account records information about an instance of the origin service. For example, an integration account for WordPress integration service stores connection information for a WordPress login.
 
 In this step, you'll create a UI for collecting the WordPress information the integration service needs, and embed it into a Zendesk Support admin view. Here's a sample screenshot of the UI you will create:
 
 <img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/cf_add_account.png" alt="cf_add_account.png">
 
-**Note**: The warning message and surrounding decorations are implemented in Zendesk Support.  Only the form is implemented in the integration service.
+**Note**: The warning message and surrounding decorations are implemented in Zendesk Support. Only the form is implemented in the integration service.
 
 First, implement the admin UI form.
 
@@ -493,7 +505,7 @@ In wordpress.js, add this `adminUiHtml` function:
 
 ```javascript
 function adminUiHtml(name, login, password, location, returnUrl, warning) {
-  let warningStr = '';
+  let warningStr = "";
 
   if (warning) {
     warningStr = `${warning}<br>`;
@@ -523,13 +535,13 @@ function adminUiHtml(name, login, password, location, returnUrl, warning) {
 ```
 
 This function returns the HTML for the input form as seen in the screenshot.
-When the administrator is editing a pre-existing account, this form displays the previous values for name, login, and password. Therefore, this page can handle both creating new integration accounts and editing existing ones.  Lines 8, 10, 14, and 18 are examples.
+When the administrator is editing a pre-existing account, this form displays the previous values for name, login, and password. Therefore, this page can handle both creating new integration accounts and editing existing ones. Lines 8, 10, 14, and 18 are examples.
 
 Zendesk Support provides a return_url when displaying the admin UI. Once the administrator has POSTed the form to the integration service, it will format the data according to Zendesk Support’s requirements and POST it back to Zendesk Support via the the return_url.
 
 On line 10, the code sets the target of this form to `./admin_ui_2` for subsequent processing.
 
-#### Step 5C:  Handle the credentials entered by the Zendesk Support admin
+### Step 5C: Handle the credentials entered by the Zendesk Support admin
 
 After the Zendesk Support administrator enters the WordPress information, the integration service needs to save the information to use in future pull and channelback requests. Instead of storing this information local to the integration service, the Channel framework provides a simple way to store it inside Zendesk Support. The return_url mentioned above is the mechanism to store metadata in Zendesk Support.
 
@@ -548,11 +560,11 @@ exports.admin_ui_2 = (attributes, res) => {
       if (!error && wordpressResponse.statusCode === 200) {
         // Request to WordPress was successful- did we find the user?
         users = JSON.parse(body);
-        user = users.find(currentUser => {
+        user = users.find((currentUser) => {
           return currentUser.name === attributes.login;
         });
 
-        if (typeof user === 'undefined') {
+        if (typeof user === "undefined") {
           // No user found, allow the admin to choose a different login
           adminHtml = adminUiHtml(
             attributes.name,
@@ -561,7 +573,8 @@ exports.admin_ui_2 = (attributes, res) => {
             attributes.wordpress_location,
             attributes.return_url,
             `Sorry, the user '${attributes.login}' was not found,
-              please try again.`);
+              please try again.`
+          );
           res.send(adminHtml);
 
           return;
@@ -574,7 +587,7 @@ exports.admin_ui_2 = (attributes, res) => {
           login: attributes.login,
           password: attributes.password,
           author: user.id,
-          wordpress_location: attributes.wordpress_location
+          wordpress_location: attributes.wordpress_location,
         });
 
         // Send the formatted data to Zendesk Support.  We do this by putting the info
@@ -605,7 +618,8 @@ exports.admin_ui_2 = (attributes, res) => {
           attributes.password,
           attributes.wordpress_location,
           attributes.return_url,
-          `Sorry, we were unable to connect to WordPress at the requested location, please try again.`);
+          `Sorry, we were unable to connect to WordPress at the requested location, please try again.`
+        );
         res.send(adminHtml);
       }
     }
@@ -615,7 +629,7 @@ exports.admin_ui_2 = (attributes, res) => {
 
 On line 2, this function calls the WordPress API to retrieve user info. This verifies the WordPress user information provided by the admin. See the `userRequestOption` function for more information about the request parameters. Lines 9-69 handle the response we get from WordPress.
 
-If WordPress returns a parsable response, lines 12-15 check if the user the admin specified is available in WordPress. If not, line 17-26  re-renders the admin_ui form with error `Sorry, the user '${attributes.login}` was not found, please try again.`
+If WordPress returns a parsable response, lines 12-15 check if the user the admin specified is available in WordPress. If not, line 17-26 re-renders the admin_ui form with error `Sorry, the user '${attributes.login}` was not found, please try again.`
 
 If the code finds the user, it knows the login is working. Line 30-36 combines all the login information into a JSON string (the metadata). Then in line 39-55, it passes the formatted information back to Zendesk Support, using a http form POST to the return url. This metadata is similar to what you used to test the pull and channelback endpoints.
 
@@ -623,8 +637,7 @@ If the code encounters any other errors, line 59-66 re-renders the admin_ui form
 
 **Note**: For ease of use and testing in this tutorial, the integration service uses basic authentication with an unencrypted password. This is not recommended for a production integration service.
 
-
-### Step 6: Connect the integration service to Zendesk Support - Part 2 (Zendesk app)
+## Step 6: Connect the integration service to Zendesk Support - Part 2 (Zendesk app)
 
 After the work in step 4A, your integration service can return a manifest to Zendesk Support. The manifest describes the location of the other endpoints. However, you still need to inform Zendesk Support of the url to the manifest. This is done via Zendesk Apps requirements.
 
@@ -635,6 +648,7 @@ You need a Zendesk Support account to test this step.
 Zendesk publishes sample apps in a [Github repository](https://github.com/zendesk/demo_apps). To get your Zendesk account working with your local integration, clone the repository and modify the requirements.json of [this sample app](https://github.com/zendesk/demo_apps/tree/master/v2/support/requirements_only_sample_app).
 
 Replace everything in requirements.json with this:
+
 ```
 {
   "channel_integrations": {
@@ -645,6 +659,7 @@ Replace everything in requirements.json with this:
   }
 }
 ```
+
 (See below for what `<integration_service_location>` is.)
 
 In this tutorial, the integration service you built runs locally, so Zendesk Support can’t reach the integration service directly. To test the integration service, you can use a tunneling service. It is also possible to deploy the integration service to the public extranet. This tutorial doesn’t cover that. You can use the ngrok tunnel tool to allow Zendesk Support to communicate with the Integration Service running on your local machine.
@@ -652,7 +667,7 @@ In this tutorial, the integration service you built runs locally, so Zendesk Sup
 1. Download the ngrok tunnel application from [ngrok website](https://ngrok.com/) and unzip it
 2. Run `ngrok http 3000`. Ngrok will set up a public address for the WordPress integration service running on port 3000.
 
-	<img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/Step5-ngrokInterface.png" alt="Step5-ngrokInterface.png">
+<img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/Step5-ngrokInterface.png" alt="Step5-ngrokInterface.png">
 
 In the ngrok interface, you can see the resource name which you will put into requirements.json. In this example, it is https://5d2c0ccd.ngrok.io/
 
@@ -660,7 +675,7 @@ In the ngrok interface, you can see the resource name which you will put into re
 
 **Note**: The free version of ngrok doesn’t support a fixed subdomain. Make sure you don’t restart ngrok or you will need to modify and reinstall the Zendesk app again. It is fine to restart the integration service or WordPress server.
 
-To build the Zendesk app, you need to have the Zendesk App Tool. Read the [Zendesk App Tool documentation](https://developer.zendesk.com/apps/docs/agent/tools#zendesk-app-tools) on how to install the tool and package the App.
+To build the Zendesk app, you need to have the Zendesk App Tool. Read the [Zendesk App Tool documentation](https://developer.zendesk.com/documentation/apps/zendesk-app-tools-zat/installing-and-using-zat/) on how to install the tool and package the App.
 
 After filling in the integration_service_location in requirements.json, run the `zat package` command in the /requirements_only_sample_app directory to get a Zendesk app zip file. Follow the [upload and install instruction](https://help.zendesk.com/hc/en-us/articles/229489328) to upload and install the local Zendesk app in your Zendesk Support instance.
 
@@ -686,36 +701,37 @@ Comments on WordPress posts should become tickets inside your Zendesk Support in
 
 In addition to setting up the integration service, the Zendesk app may also have other code in it to enhance the Zendesk Support UI. Read the [Zendesk Apps documentation](https://help.zendesk.com/hc/en-us/articles/229489128-Zendesk-Apps-framework-basics) for more information.
 
-### Step 7: Store state information in Zendesk Support (Metadata, Pull State)
+## Step 7: Store state information in Zendesk Support (Metadata, Pull State)
+
 Zendesk Support can store metadata and state for your integration, which allows you to build integrations without worrying about data storage, security, backup, etc. (Note: This doesn’t prevent you to add data storage to integration service if needed.)
 
 There are two kinds of data an integration service needs:
 
-* Data about the integration account. For example, the WordPress service requires user login and WordPress location. Channel framework calls this the metadata.
-* Data that describes the current state of pulls. For example, timestamp of the last imported comment for the WordPress integration service. Channel Framework calls this the pull state.
+- Data about the integration account. For example, the WordPress service requires user login and WordPress location. Channel framework calls this the metadata.
+- Data that describes the current state of pulls. For example, timestamp of the last imported comment for the WordPress integration service. Channel Framework calls this the pull state.
 
 Zendesk Support can store these two pieces of information. Zendesk Support provides them when it calls the integration service:
 
-* Pull calls and the admin UI will receive both the metadata and state
-* Channelback calls will receive the metadata
-Read the [metadata and state documentation](https://developer.zendesk.com/apps/docs/channels-framework/metadata_state#content) for more information on metadata and state.
+- Pull calls and the admin UI will receive both the metadata and state
+- Channelback calls will receive the metadata
+  Read the [metadata and state documentation](https://developer.zendesk.com/apps/docs/channels-framework/metadata_state#content) for more information on metadata and state.
 
 Let’s review the code that handles this information.
 
 In Step 4C, the integration service creates the metadata in this part of the response handler.
 
 ```javascript
-        metadata = JSON.stringify({
-          name: attributes.name,
-          login: attributes.login,
-          password: attributes.password,
-          author: user.id,
-          wordpress_location: attributes.wordpress_location
-        });
+metadata = JSON.stringify({
+  name: attributes.name,
+  login: attributes.login,
+  password: attributes.password,
+  author: user.id,
+  wordpress_location: attributes.wordpress_location,
+});
 
-        // Send the formatted data to Zendesk Support.  We do this by putting the info
-        // into a form and then programmatically submitting the form.
-        res.send(`<html><body>
+// Send the formatted data to Zendesk Support.  We do this by putting the info
+// into a form and then programmatically submitting the form.
+res.send(`<html><body>
           <form id="finish"
                 method="post"
                 action="${escapeString(attributes.return_url)}">
@@ -739,21 +755,21 @@ When the integration service receives a successful login for WordPress during se
 In Step 2, the code updates the state in the pull response handler:
 
 ```javascript
-  newState = pullState(bodyInfo, state);
+newState = pullState(bodyInfo, state);
 ```
 
 The pullState method is in wordpress.js:
 
 ```javascript
-  function pullState(comments, previousState) {
-    if (!comments || !comments.length) {
-      return previousState || {};
-    }
-
-    return {
-      most_recent_item_timestamp: comments[comments.length - 1].date_gmt
-    };
+function pullState(comments, previousState) {
+  if (!comments || !comments.length) {
+    return previousState || {};
   }
+
+  return {
+    most_recent_item_timestamp: comments[comments.length - 1].date_gmt,
+  };
+}
 ```
 
 This method looks at the comments returned by WordPress. If there are any comments, the code extracts the timestamp of the most recent comment. The code puts that timestamp into the state.
@@ -762,8 +778,8 @@ The integration service returns state to Zendesk Support for every pull call, an
 
 One thing to note - Zendesk Support never parses the metadata or state. This means that the integration service can use any format and any structure in these two fields, so long as it’s converted to a string. Both fields have length limit of 5000 characters.
 
+## Step 8: Provide native resource links in Zendesk Support (Clickthrough)
 
-### Step 8: Provide native resource links in Zendesk Support (Clickthrough)
 At this point, you have a working integration between Zendesk Support and WordPress. To enhance the agent experience, you can add a clickthrough endpoint to allow agents to view the external resource natively. For example, after implementing clickthrough in the WordPress integration service, agents can click a link in the ticket to see the comment in the WordPress UI.
 
 <img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/Step7-CommentUI.png" alt="Step7-CommentUI.png" />
@@ -777,34 +793,34 @@ exports.clickthrough = (externalId, res) => {
   res.redirect(parseExternalCommentId(externalId).link);
 };
 ```
+
 This function redirects the requester to the WordPress comment location.
 
 When the agent clicks the clickthrough link in the Zendesk Support UI, Zendesk Support sends the external id of that comment to the integration service as a parameter. This is the only data Zendesk Support sends - Zendesk Support does NOT send the metadata, as this would be insecure.
 
-When our WordPress code constructs an external ID, it includes the post URL. The clickthrough code uses that portion of the external\_id. Previously, we discussed an example external\_id:
+When our WordPress code constructs an external ID, it includes the post URL. The clickthrough code uses that portion of the external_id. Previously, we discussed an example external_id:
 
 `8:2:http://localhost:25789/index.php/rick-astley-50/#comment-2`
 
-You can see the comment URL has no relationship to the post\_id (post ID is 8, but the clickthrough URL doesn’t contain “8”.).
+You can see the comment URL has no relationship to the post_id (post ID is 8, but the clickthrough URL doesn’t contain “8”.).
 
 If you open any WordPress ticket in the Zendesk Support UI, you can click the link and see the comment in WordPress.
 
 This concludes the tutorial for integration service. To recap, you did the following:
 
-* Created a pull endpoint to fetch data from WordPress
-* Created a channelback endpoint to post reply to WordPress
-* Added the manifest telling Zendesk Support where the pull and post endpoints are located
-* Added an admin ui allowing Zendesk Support admin to setup the WordPress integration
-* Created a Zendesk app to register your new integration service with Zendesk Support
-* Learned how to use Zendesk Support to store the metadata and state
-* Created a clickthrough endpoint for viewing a comment natively in WordPress
+- Created a pull endpoint to fetch data from WordPress
+- Created a channelback endpoint to post reply to WordPress
+- Added the manifest telling Zendesk Support where the pull and post endpoints are located
+- Added an admin ui allowing Zendesk Support admin to setup the WordPress integration
+- Created a Zendesk app to register your new integration service with Zendesk Support
+- Learned how to use Zendesk Support to store the metadata and state
+- Created a clickthrough endpoint for viewing a comment natively in WordPress
 
-
-### Appendix: Environment setup
+## Appendix: Environment setup
 
 **2020-09-14**: This setup guide was written in 2017. Some information may be out of date. See [Known issues](#known-issues).
 
-#### Step 1: Set up WordPress locally
+### Step 1: Set up WordPress locally
 
 WordPress needs an RDBMS to store blog posts and comments. Here is one way to set up the database:
 
@@ -848,20 +864,21 @@ Now you can run WordPress by installing locally.
 
 3. `php -f scripts/test_database_connection.php`
 
-    If the command prints `Connected successfully`, php and mysql are working.
+   If the command prints `Connected successfully`, php and mysql are working.
 
-    Common causes for failure include:
-    * MySQL is not running on the correct host and port.
-    * Your php version doesn't contain the correct MySQLi library.
-    * On Mac OS X, you can install php (WordPress recommends 5.6 as of 15th July 2016) through [http://php-osx.liip.ch/].
+   Common causes for failure include:
 
-6. Get the latest WordPress source code from https://wordpress.org/download/ and unzip it.
+   - MySQL is not running on the correct host and port.
+   - Your php version doesn't contain the correct MySQLi library.
+   - On Mac OS X, you can install php (WordPress recommends 5.6 as of 15th July 2016) through [https://formulae.brew.sh/formula/php](https://formulae.brew.sh/formula/php).
 
-7. Change directories to the unzipped WordPress directory (where wp-login.php is located).
+4. Get the latest WordPress source code from https://wordpress.org/download/ and unzip it.
 
-8. Run `php -S 127.0.0.1:25789` to start the WordPress server (the port number can be replaced by any unbound port on the machine).
+5. Change directories to the unzipped WordPress directory (where wp-login.php is located).
 
-9. Go to http://127.0.0.1:25789 in a browser. WordPress will guide you through the setup.
+6. Run `php -S 127.0.0.1:25789` to start the WordPress server (the port number can be replaced by any unbound port on the machine).
+
+7. Go to http://127.0.0.1:25789 in a browser. WordPress will guide you through the setup.
 
 You need to install two WordPress plugins - rest-api for responding to API requests and JSON Basic Authentication for authentication.
 
@@ -883,12 +900,11 @@ You need to install two WordPress plugins - rest-api for responding to API reque
 
 7. Verify the plugin is working by running `curl http://<Url and port of the WordPress Instance>/wp-json/wp/v2/posts`.
 
-    Example: `curl http://127.0.0.1:25789/wp-json/wp/v2/posts`
+   Example: `curl http://127.0.0.1:25789/wp-json/wp/v2/posts`
 
-    A JSON response that contains all the posts should be returned.
+   A JSON response that contains all the posts should be returned.
 
-    If curling the endpoint returns html instead of json, in WordPress, go to Admin > Settings > Permalink and change the setting to Post name. That should fixes the issue. See [Original Issue](https://wordpress.org/support/topic/version-20-beta11-not-work-on-my-website-is-there-something-i-have-missed).
-
+   If curling the endpoint returns html instead of json, in WordPress, go to Admin > Settings > Permalink and change the setting to Post name. That should fixes the issue. See [Original Issue](https://wordpress.org/support/topic/version-20-beta11-not-work-on-my-website-is-there-something-i-have-missed).
 
 **To install the JSON Basic Authentication plugin**
 
@@ -910,22 +926,23 @@ You need to install two WordPress plugins - rest-api for responding to API reque
 
 9. Verify the plugin is working by running `curl -v --user <username>:<password> http://<Url and port of the WordPress Instance>/wp-json/wp/v2/users`.
 
-    Example: `curl -v --user admin:123456 http://127.0.0.1:25789/wp-json/wp/v2/users`
+   Example: `curl -v --user admin:123456 http://127.0.0.1:25789/wp-json/wp/v2/users`
 
-    You should get the list of WordPress users, and the http headers should include Server auth using Basic with user `<username>`.
+   You should get the list of WordPress users, and the http headers should include Server auth using Basic with user `<username>`.
 
-    <img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/AppendixWordPressAuthScreenshot.png" width="500px"></img>
+   <img src="https://zen-marketing-documentation.s3.amazonaws.com/docs/en/AppendixWordPressAuthScreenshot.png" width="500">
 
 WordPress is set up correctly now. Create some blog posts and comments on those posts using the WordPress UI. The comments will show up in Zendesk Support once you finish the tutorial.
 
-### Step 2: Set up the integration service environment
+## Step 2: Set up the integration service environment
+
 The tutorial integration service is written in Node using the Express framework. You can use any language or framework to build your own integration services. Zendesk recommends using OAuth and SSL with the external service whenever possible. Zendesk Support requires SSL when communicating with the integration service.
 
 **To set up the Node/Express server**
 
 1. Go to the [sample integration service source code directory](https://github.com/zendesk/sample_wordpress_anychannel_integration).
 
-2. Download node from [https://nodejs.org/en/] and install it.
+2. Download node from [https://nodejs.org/en/](https://nodejs.org/en/) and install it.
 
 3. `nodenv local 5.7.0`
 
