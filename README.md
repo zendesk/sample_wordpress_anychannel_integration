@@ -1,11 +1,9 @@
-# Example AnyChannel integration with Wordpress using Node Express
+# Example Channel integration with WordPress using Node Express
 
 ## Description
-This repository contains the source code for an integration service that connects
-Zendesk to Wordpress.  It is intended to be used with the [AnyChannel tutorial](https://help.zendesk.com/hc/en-us/articles/229137767-Channel-framework-startup-tutorial-Overview).
+This repository contains the source code for an integration service that connects Zendesk to WordPress. It is intended to be used with the [Channel framework startup tutorial](./docs/index.md).
 
-It only works with Wordpress instances that have the "rest-api" and "JSON Basic Authentication"
-plug-ins.
+The example channel no longer works with newer WordPress instances that don't use the rest-api plug-in. See [Known issues](./docs/index.md#known-issues) in the docs.
 
 NOTE: THIS IS NOT AN EXAMPLE OF A PROPERLY SECURED INTEGRATION.  It's intentionally as simple as reasonable, and it skips best practices like using oauth and handling errors gracefully.  Production integrations should NOT use basic authentication.
 
