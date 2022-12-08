@@ -153,7 +153,7 @@ After every testable change throughout the tutorial, press **Ctrl+C** to stop th
 
 In this tutorial, you will verify each step using curl. The verification commands require the WordPress url, user name and password. You can set shell variables to make this easier.
 
-```
+```sh
 export WORDPRESS_URL=http://localhost:25789/
 export WORDPRESS_USER=lchan
 export WORDPRESS_PASSWORD=lchan
@@ -286,8 +286,19 @@ curl -d "metadata={\"password\":\"$WORDPRESS_PASSWORD\", \"login\":\"$WORDPRESS_
 
 This command posts to the pull endpoint you built. It passes the metadata and state for calling WordPress. Your `pullRequestOptions` function processes the metadata and state. We will discuss metadata and state later. If you have created some WordPress posts and comments, the response should look similar to this:
 
-```
-{"external_resources":[{"external_id":"8:2:http://localhost:25789/index.php/rick-astley-50/#comment-2","message":"Never Gonna Give You Up.\n","parent_id":"8:0:http://localhost:25789/index.php/rick-astley-50/#comment-0","created_at":"2016-07-19T22:56:33.000Z","author":{"external_id":"1","name":"lchan"}}],"state":"{\"most_recent_item_timestamp\":\"2016-07-19T22:56:33\"}"}
+```json
+{
+  "external_resources": [
+    {
+      "external_id": "8:2:http://localhost:25789/index.php/rick-astley-50/#comment-2",
+      "message": "Never Gonna Give You Up.\n",
+      "parent_id": "8:0:http://localhost:25789/index.php/rick-astley-50/#comment-0",
+      "created_at": "2016-07-19T22:56:33.000Z",
+      "author": { "external_id": "1", "name": "lchan" }
+    }
+  ],
+  "state": "{\"most_recent_item_timestamp\":\"2016-07-19T22:56:33\"}"
+}
 ```
 
 ## Step 3: Add logging of event callbacks
@@ -306,7 +317,7 @@ exports.eventCallback = (body, res) => {
 
 You can test this by POSTing data to the event callback endpoint, and verifying that you see the POSTed data logged out by your service, like this:
 
-```
+```sh
 curl -X POST -d '{"some key":"some value"}' -H "Content-Type: application/json" http://localhost:3000/event_callback
 ```
 
@@ -425,13 +436,13 @@ Now you can verify that your implementation works by curl'ing both the pull and 
 
 Make sure there is at least one comment in WordPress. Restart the server, [set the WordPress variables](point to Step1), and run this `curl` command to pull. You’ll use the results to get the external id of a WordPress comment, which you’ll pass to the channelback command.
 
-```
+```sh
 curl -d "metadata={\"password\":\"$WORDPRESS_PASSWORD\", \"login\":\"$WORDPRESS_USER\", \"wordpress_location\":\"$WORDPRESS_URL\",\"author\":\"1\"}&state={}" http://localhost:3000/pull
 ```
 
 The result should include an external ID for a WordPress comment. After that, run this `curl` command to channelback:
 
-```
+```sh
 curl -d "metadata={\"password\":\"$WORDPRESS_PASSWORD\", \"login\":\"$WORDPRESS_USER\", \"wordpress_location\":\"$WORDPRESS_URL\",\"author\":\"1\"}&parent_id=<external id of the wordpress comment to reply>&message=<message>" http://localhost:3000/channelback
 (Add a message and set parent_id with the external_id you get from the pull command)
 ```
@@ -439,7 +450,9 @@ curl -d "metadata={\"password\":\"$WORDPRESS_PASSWORD\", \"login\":\"$WORDPRESS_
 You should get a response like this:
 
 ```
-{"external_id":"8:3:http://localhost:25789/index.php/rick-astley-50/#comment-3"}
+{
+  "external_id": "8:3:http://localhost:25789/index.php/rick-astley-50/#comment-3"
+}
 ```
 
 Also, if you go to the WordPress UI, you should see the new comment created by the channelback.
@@ -479,14 +492,26 @@ Now you can verify manifest endpoint works with curl.
 
 Restart the server and run this `curl` command:
 
-```
+```sh
 curl http://localhost:3000/manifest
 ```
 
 You should get a JSON string like:
 
-```
-{"name":"WordPress","id":"com.zendesk.anychannel.integrations.wordpress","author":"Zendesk","version":"v0.0.1","urls":{"admin_ui":"./admin_ui","pull_url":"./pull","channelback_url":"./channelback","clickthrough_url":"./clickthrough","healthcheck_url":"./healthcheck"}}
+```json
+{
+  "name": "WordPress",
+  "id": "com.zendesk.anychannel.integrations.wordpress",
+  "author": "Zendesk",
+  "version": "v0.0.1",
+  "urls": {
+    "admin_ui": "./admin_ui",
+    "pull_url": "./pull",
+    "channelback_url": "./channelback",
+    "clickthrough_url": "./clickthrough",
+    "healthcheck_url": "./healthcheck"
+  }
+}
 ```
 
 ### Step 5B: Allow the Zendesk Support admin to set up the Integration Service
@@ -649,12 +674,11 @@ Zendesk publishes sample apps in a [Github repository](https://github.com/zendes
 
 Replace everything in requirements.json with this:
 
-```
+```json
 {
   "channel_integrations": {
     "wordpress": {
-      "manifest_url":
-        "https://<integration_service_location>/manifest"
+      "manifest_url": "https://<integration_service_location>/manifest"
     }
   }
 }
